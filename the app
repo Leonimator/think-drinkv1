@@ -1,0 +1,35 @@
+import streamlit as st
+import requests
+
+def fetch_data(query, api_key):
+    """Fetch data from the API based on the search query with API key in headers."""
+    headers = {'Authorization': f'Bearer {api_key}'}
+    response = requests.get('API_URL', params={'query': query}, headers=headers)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return None
+
+def main():
+    st.title('Attraction Finder')
+    st.write('Enter a keyword to search for attractions, destinations, or tours.')
+
+    # Text input for search query
+    query = st.text_input('Search Keyword', '')
+    api_key = st.text_input('sIc2qS2gs7jrSld9nhih5ambBIQRDRE1qYV3pPi0', type='password')  # You can enter the API key here
+
+    # Button to trigger the search
+    if st.button('Search'):
+        if query and api_key:
+            data = fetch_data(query, api_key)
+            if data:
+                st.write('Results:')
+                for item in data:
+                    st.write(item)  # Adjust how data is displayed based on your API response structure
+            else:
+                st.write('No results found, please try a different keyword.')
+        else:
+            st.write('Please enter both a keyword and the API key to search.')
+
+if __name__ == "__main__":
+    main()

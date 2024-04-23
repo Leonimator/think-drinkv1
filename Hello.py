@@ -1,51 +1,45 @@
-# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022)
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import streamlit as st
-from streamlit.logger import get_logger
+import requests
+import pandas as pd
 
-LOGGER = get_logger(__name__)
+# Function to fetch data from MySwitzerland API
+def fetch_data(location, category, max_distance, limit=10):
+    api_key = 'sIc2qS2gs7jrSld9nhih5ambBIQRDRE1qYV3pPi0'
+    headers = {
+        'Authorization': f'Bearer {api_key}'
+    }
+    params = {
+        'location': location,
+        'category': category,
+        'radius': max_distance,
+        'limit': limit
+    }
+    url = 'https://api.myswitzerland.com/v3/businesses/search'  # This URL needs to be corrected based on actual API documentation
+    response = requests.get(url, headers=headers, params=params)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return None
 
+# Set up the Streamlit app
+def main():
+    st.title("Campus Eats")
+    st.write("Discover the best food and drinks near your campus in Switzerland!")
 
-def run():
-    st.set_page_config(
-        page_title="Hello",
-        page_icon="👋",
-    )
+    # User input for API parameters
+    location = st.text_input("Enter a location (e.g., Zurich, Geneva)", "Zurich")
+    max_distance = st.slider('Maximum Distance from Campus (meters)', 100, 5000, 1000)
+    selected_category = st.selectbox('Type of Place', options=['', 'bars', 'restaurants'])
 
-    st.write("# Welcome to Streamlit! 👋")
-
-    st.sidebar.success("Select a demo above.")
-
-    st.markdown(
-        """
-        Streamlit is an open-source app framework built specifically for
-        Machine Learning and Data Science projects.
-        **👈 Select a demo from the sidebar** to see some examples
-        of what Streamlit can do!
-        ### Want to learn more?
-        - Check out [streamlit.io](https://streamlit.io)
-        - Jump into our [documentation](https://docs.streamlit.io)
-        - Ask a question in our [community
-          forums](https://discuss.streamlit.io)
-        ### See more complex demos
-        - Use a neural net to [analyze the Udacity Self-driving Car Image
-          Dataset](https://github.com/streamlit/demo-self-driving)
-        - Explore a [New York City rideshare dataset](https://github.com/streamlit/demo-uber-nyc-pickups)
-    """
-    )
-
+    # Fetch data when user updates input
+    if st.button('Search'):
+        raw_data = fetch_data(location, selected_category, max_distance)
+        if raw_data and 'businesses' in raw_data:
+            businesses = raw_data['businesses']
+            df = pd.DataFrame.from_records(businesses)
+            st.write(df[['name', 'location', 'rating']])
+        else:
+            st.error("Failed to fetch data from MySwitzerland API.")
 
 if __name__ == "__main__":
-    run()
+    main()
