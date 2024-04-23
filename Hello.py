@@ -14,7 +14,7 @@ def fetch_data(location, category, max_distance, limit=10):
         'radius': max_distance,
         'limit': limit
     }
-    url = 'https://api.myswitzerland.com/v3/businesses/search'  # This URL needs to be corrected based on actual API documentation
+    url = 'https://opendata.myswitzerland.io/v1'  # This URL needs to be corrected based on actual API documentation
     response = requests.get(url, headers=headers, params=params)
     if response.status_code == 200:
         return response.json()
